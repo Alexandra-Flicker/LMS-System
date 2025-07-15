@@ -9,6 +9,7 @@ type MainRepositoryInterface interface {
 	Course() CourseRepositoryInterface
 	Chapter() ChapterRepositoryInterface
 	Lesson() LessonRepositoryInterface
+	UserCourseAccess() UserCourseAccessInterface
 }
 
 type CourseRepositoryInterface interface {
@@ -33,4 +34,9 @@ type LessonRepositoryInterface interface {
 	DeleteLessonById(ctx context.Context, lessonId uint) error
 	GetLessonById(ctx context.Context, id uint) (*entity.Lesson, error)
 	GetAllLessonsByChapterId(ctx context.Context, chapterId uint) ([]entity.Lesson, error)
+}
+
+type UserCourseAccessInterface interface {
+	GetAllByUserId(ctx context.Context, userId uint) ([]entity.UserCourseAccess, error)
+	UpdateAccess(ctx context.Context, access *entity.UserCourseAccess) error
 }
