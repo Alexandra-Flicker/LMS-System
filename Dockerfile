@@ -20,23 +20,23 @@ RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 # 7. Сборка приложения
 RUN go build -o main ./cmd/lms
 
-# 8. Финальный контейнер
+# Финальный контейнер
 FROM alpine:latest
 
-# 9. Установка зависимостей (только для runtime)
 RUN apk --no-cache add ca-certificates
 
-# 10. Рабочая директория
 WORKDIR /root/
 
-# 11. Копируем собранное приложение
+# Копируем приложение и миграции
 COPY --from=builder /app/main .
+COPY --from=builder /app/migrations ./migrations
 
-# 12. Копируем миграции, если они нужны
-COPY --from=builder /app/migration ./migration
+# 🔧 Копируем goose CLI из builder
+COPY --from=builder /go/bin/goose /usr/local/bin/goose
 
-# 13. Порт, который слушает приложение
-EXPOSE 8080
+# Копируем entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# 14. Команда запуска
-CMD ["./main"]
+# Устанавливаем точку входа
+ENTRYPOINT ["/entrypoint.sh"]

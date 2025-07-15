@@ -1,5 +1,22 @@
-MIGRATION_DIR=./migrations
-DB_URL=postgres://postgres:password@localhost:5432/your_db?sslmode=disable
+ENV_FILE := .env
+
+# Подгружаем переменные окружения из .env
+include $(ENV_FILE)
+export $(shell sed 's/=.*//' $(ENV_FILE))
+
+MIGRATION_DIR :=./migrations
+DB_URL := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@lms_db:$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable
+
+# Запуск docker-compose
+up:
+	docker-compose --env-file $(ENV_FILE) up --build -d
+
+# Остановить и удалить контейнеры
+down:
+	docker-compose --env-file $(ENV_FILE) down
+
+# Перезапуск
+restart: down up
 
 # Название новой миграции передаётся через `make create-migration name=init_course`
 create-migration:
