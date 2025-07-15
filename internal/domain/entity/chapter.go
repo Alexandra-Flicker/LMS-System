@@ -6,6 +6,11 @@ type ChapterAggregate struct {
 	Chapter
 	Lessons []Lesson
 }
+
+type ChapterInfoAggregate struct {
+	Chapter
+	LessonsName []string
+}
 type Chapter struct {
 	ID            uint
 	Name          string
