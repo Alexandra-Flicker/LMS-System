@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"gorm.io/gorm"
 	"lms_system/internal/domain"
 	"lms_system/internal/infrastructure/repository/postgres/chapter"
 	"lms_system/internal/infrastructure/repository/postgres/course"
@@ -9,24 +10,25 @@ import (
 )
 
 type MainRepository struct {
+	db *gorm.DB
 }
 
-func NewMainRepository() *MainRepository {
-	return &MainRepository{}
+func NewMainRepository(db *gorm.DB) *MainRepository {
+	return &MainRepository{db: db}
 }
 
 func (r *MainRepository) Course() domain.CourseRepositoryInterface {
-	return course.NewRepository()
+	return course.NewRepository(r.db)
 }
 
 func (r *MainRepository) Chapter() domain.ChapterRepositoryInterface {
-	return chapter.NewRepository()
+	return chapter.NewRepository(r.db)
 }
 
 func (r *MainRepository) Lesson() domain.LessonRepositoryInterface {
-	return lesson.NewRepository()
+	return lesson.NewRepository(r.db)
 }
 
 func (r *MainRepository) UserCourseAccess() domain.UserCourseAccessInterface {
-	return user_course_access.NewRepository()
+	return user_course_access.NewRepository(r.db)
 }
