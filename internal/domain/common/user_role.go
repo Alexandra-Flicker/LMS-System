@@ -3,6 +3,7 @@ package common
 type UserRole string
 
 const (
-	RoleUser  UserRole = "user"
-	RoleAdmin UserRole = "admin"
+	RoleAdmin   = "ROLE_ADMIN"
+	RoleTeacher = "ROLE_TEACHER"
+	RoleUser    = "ROLE_USER"
 )

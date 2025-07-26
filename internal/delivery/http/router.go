@@ -6,13 +6,14 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
-	
+
 	_ "lms_system/docs"
 	"lms_system/internal/delivery/http/handlers/chapter"
 	"lms_system/internal/delivery/http/handlers/course"
 	"lms_system/internal/delivery/http/handlers/lesson"
 	"lms_system/internal/delivery/http/middleware"
 	"lms_system/internal/domain"
+	"lms_system/internal/domain/common"
 )
 
 func NewRouter(service domain.ServiceInterface) *chi.Mux {
@@ -56,7 +57,7 @@ func NewRouter(service domain.ServiceInterface) *chi.Mux {
 		// Admin routes (authentication + admin role required)
 		r.Route("/admin", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware)
-			r.Use(middleware.AdminOnlyMiddleware)
+			r.Use(middleware.OnlyRoles(common.RoleAdmin))
 
 			r.Route("/courses", func(r chi.Router) {
 				r.Post("/", courseHandler.CreateCourse)

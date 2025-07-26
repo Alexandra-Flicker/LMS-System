@@ -2,6 +2,7 @@ package lesson
 
 import (
 	"context"
+	"errors"
 	"lms_system/internal/domain/entity"
 
 	"github.com/sirupsen/logrus"
@@ -97,7 +98,7 @@ func (r *Repository) GetLessonById(ctx context.Context, id uint) (*entity.Lesson
 		First(&lesson).Error
 
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.logger.WithFields(logrus.Fields{
 				"method":    "GetLessonById",
 				"lesson_id": id,

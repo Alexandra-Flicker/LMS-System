@@ -2,10 +2,13 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"lms_system/internal/domain/common"
 	"lms_system/internal/domain/entity"
 	"net/http"
 	"strings"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -25,7 +28,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		token := tokenParts[1]
 		userCtx, err := validateToken(token)
 		if err != nil {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			http.Error(w, "Invalid token: "+err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -34,19 +37,46 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func validateToken(token string) (*entity.UserContext, error) {
-	switch token {
-	case "admin-token":
-		return &entity.UserContext{
-			UserID: 1,
-			Role:   common.RoleAdmin,
-		}, nil
-	case "user-token":
-		return &entity.UserContext{
-			UserID: 2,
-			Role:   common.RoleUser,
-		}, nil
-	default:
-		return nil, http.ErrNoCookie // Using as generic error
+func validateToken(tokenString string) (*entity.UserContext, error) {
+	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
+	if err != nil {
+		return nil, err
 	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("invalid token claims")
+	}
+
+	username, ok := claims["preferred_username"].(string)
+	if !ok || username == "" {
+		return nil, errors.New("missing username in token")
+	}
+
+	sub, ok := claims["sub"].(string)
+	if !ok || sub == "" {
+		return nil, errors.New("missing sub in token")
+	}
+
+	role := common.RoleUser
+
+	if ra, ok := claims["realm_access"].(map[string]interface{}); ok {
+		if rawRoles, ok := ra["roles"].([]interface{}); ok {
+			for _, r := range rawRoles {
+				roleStr, _ := r.(string)
+				switch strings.ToUpper(roleStr) {
+				case "ROLE_ADMIN":
+					role = common.RoleAdmin
+				case "ROLE_TEACHER":
+					role = common.RoleTeacher
+				}
+			}
+		}
+	}
+
+	return &entity.UserContext{
+		UserID:   sub,
+		Username: username,
+		Role:     common.UserRole(role),
+	}, nil
 }

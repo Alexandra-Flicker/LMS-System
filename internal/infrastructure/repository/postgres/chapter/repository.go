@@ -2,6 +2,7 @@ package chapter
 
 import (
 	"context"
+	"errors"
 	"lms_system/internal/domain/entity"
 
 	"github.com/sirupsen/logrus"
@@ -97,7 +98,7 @@ func (r *Repository) GetChapterById(ctx context.Context, id uint) (*entity.Chapt
 		First(&chapter).Error
 
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.logger.WithFields(logrus.Fields{
 				"method":     "GetChapterById",
 				"chapter_id": id,
